@@ -16,6 +16,8 @@ The DAG **`etl_events_dag`** runs three tasks in sequence:
 
 **Data flow:** Google Drive → `source/logs.json` → transform → `source/transformed.parquet` → MongoDB `etl_db.events`.
 
+For **analytics queries** (Daily Active Users, Daily Purchases) and their MongoDB aggregation equivalents, see [ANALYTICS_README.md](ANALYTICS_README.md).
+
 The DAG is **manually triggered** (no schedule). Each run overwrites/extends the data in the target collection depending on your use case.
 
 ---
@@ -32,13 +34,12 @@ infilon/
 ├── docker-compose.yaml       # Airflow stack (Postgres, Redis, scheduler, worker, webserver)
 ├── dags/
 │   ├── etl_events_dag.py     # ETL DAG (extract → transform → load)
-│   └── README.md             # DAG folder notes
 ├── source/                   # ETL inputs/outputs (mounted in Docker)
 │   ├── logs.json             # Downloaded from Google Drive (extract output)
 │   └── transformed.parquet   # Transformed data (transform output)
-├── script.ipynb              # Original ETL logic (notebook)
-├── config/                   # Airflow config (optional)
-└── plugins/                  # Airflow plugins (optional)
+├── analytics_sql_query.sql   # SQL reference for analytics
+├── ANALYTICS_README.md       # MongoDB equivalents + query output screenshots
+└── screenshots/              # Query result screenshots (for ANALYTICS_README)
 ```
 
 ---
@@ -109,54 +110,6 @@ Monitor progress in the Graph or Grid view. When all three tasks (extract → tr
 
 ---
 
-## Running Locally (optional)
+## Pipeline overview
 
-If you prefer to run the ETL logic outside Airflow (e.g. in the notebook):
-
-```bash
-python -m venv .venv
-source .venv/bin/activate   # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-Ensure `.env` exists with `mongodb_conn_string`. You can run the cells in `script.ipynb` or call the same logic from a script.
-
----
-
-## Environment Variables
-
-| Variable               | Used by        | Description |
-|------------------------|----------------|-------------|
-| `mongodb_conn_string`  | Load task / .env | MongoDB URI (required for load). |
-| `AIRFLOW_IMAGE_NAME`   | Docker Compose | Override Airflow image name (default: `infilon-airflow:latest`). |
-| `AIRFLOW_PROJ_DIR`     | Docker Compose | Project path for volumes (default: `.`). |
-| `AIRFLOW_UID`          | Docker Compose | User ID for Airflow containers (see Airflow Docker docs). |
-
----
-
-## DAG Details
-
-- **DAG id:** `etl_events_dag`
-- **Schedule:** None (trigger manually).
-- **Tasks:** `extract` → `transform` → `load` (linear).
-- **Data passing:** Extract returns the path to `logs.json`; Transform reads it and writes `transformed.parquet`, then returns that path; Load reads the parquet and inserts into MongoDB. Paths are passed via Airflow XCom.
-- **Retries:** 1 retry with 2-minute delay on failure.
-
----
-
-## Troubleshooting
-
-- **DAG not appearing or import errors**  
-  Check: `docker compose exec airflow-scheduler airflow dags list-import-errors`
-
-- **Load task: "mongodb_conn_string not set"**  
-  Add `mongodb_conn_string` to `.env` in the project root and restart: `docker compose down && docker compose up -d`
-
-- **Rebuild after changing `requirements.txt`**  
-  `docker compose build --no-cache airflow-image` then `docker compose up -d`
-
----
-
-## Summary
-
-This project provides a production-style ETL pipeline on Airflow: **extract** from Google Drive, **transform** with pandas, and **load** into MongoDB, with dependencies defined in `requirements.txt` and the connection string in `.env` (or an Airflow Variable).
+![ETL Events DAG](DAG_graph.png)
