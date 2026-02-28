@@ -2,7 +2,9 @@
 
 An Apache Airflow ETL pipeline that **extracts** event logs from Google Drive, **transforms** them into a flat, typed structure, and **loads** them into MongoDB. Suitable for event analytics (e.g. daily active users, purchases).
 
----
+## Pipeline overview
+
+![ETL Events DAG](Image/DAG_graph.png)
 
 ## What This Pipeline Does
 
@@ -62,10 +64,10 @@ infilon/
 
 ## Setup and Run
 
-### 1. Clone and enter the project
+### 1. Clone the repository
 
 ```bash
-cd infilon
+git clone <repository-url>
 ```
 
 ### 2. Configure MongoDB connection
@@ -130,11 +132,3 @@ After the ETL loads data into MongoDB (`etl_db.events`), you can run analytics o
 - **Output (CSV)** — Query results are also available as CSV files in **`output/`**:
   - `output/DAU.csv` — Daily Active Users
   - `output/DAILY_TOTAL_PURCHASE.csv` — Daily Purchases  
-
-Open these in Excel, Google Sheets, or any text editor to view the results.
-
----
-
-## Pipeline overview
-
-![ETL Events DAG](Image/DAG_graph.png)
