@@ -8,7 +8,7 @@ import pandas as pd
 import requests
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-
+import numpy as np
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
@@ -61,7 +61,8 @@ def transform(**context):
 
     # Ensure numeric type
     df["amount"] = df["amount"].astype("float")
-
+    df["amount"] = df["amount"].where(pd.notnull(df["amount"]), None)
+    df["device"] = df["device"].where(pd.notnull(df["device"]), None)
     os.makedirs(SOURCE_DIR, exist_ok=True)
     df.to_parquet(TRANSFORMED_PATH, index=False)
     return TRANSFORMED_PATH
@@ -84,6 +85,7 @@ def load(**context):
     collection = db["events"]
 
     df = pd.read_parquet(path)
+    df = df.replace({np.nan: None})
     df["event_timestamp"] = df["event_timestamp"].dt.to_pydatetime()
     records = df.to_dict(orient="records")
     collection.insert_many(records)

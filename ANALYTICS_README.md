@@ -1,8 +1,24 @@
 # Analytics Queries (MongoDB)
 
-Analytics queries on the **`events`** collection in MongoDB (`etl_db.events`), populated by the ETL pipeline. Below are the MongoDB aggregation equivalents of the SQL in `analytics_sql_query.sql`, plus expected output descriptions. Add screenshots of your query results in the places indicated.
+Analytics queries on the **`events`** collection in MongoDB (`etl_db.events`), populated by the ETL pipeline. Below are the MongoDB aggregation equivalents of the SQL in `analytics_sql_query.sql`, plus expected output descriptions.
+
+## Source collection: `events` (loaded by ETL)
+
+The ETL pipeline loads transformed records into **`etl_db.events`**. Each document has fields such as `user_id`, `event_type`, `event_timestamp`, `device`, and `amount`:
+
+![Events collection in MongoDB](Image/events_collection_output.png)
 
 ---
+
+## Output results (CSV)
+
+You can view the same query results in CSV format in the **`output/`** folder:
+
+| Query | File |
+|-------|------|
+| Daily Active Users (DAU) | [output/DAU.csv](output/DAU.csv) |
+| Daily Purchases | [output/DAILY_TOTAL_PURCHASE.csv](output/DAILY_TOTAL_PURCHASE.csv) |
+
 
 ## 1. Daily Active Users (DAU)
 
@@ -56,7 +72,7 @@ One document per day with `_id` (date) and `daily_active_users` (count of distin
 
 *Screenshot of DAU query result:*
 
-![Daily Active Users query output](screenshots/dau-output.png)
+![Daily Active Users query output](Image/DAU_QUERY_OUTPUT.png)
 
 ---
 
@@ -108,25 +124,4 @@ One document per day with `_id` (date), `total_purchases` (count), and `total_re
 
 *Screenshot of Daily Purchases query result:*
 
-![Daily Purchases query output](screenshots/daily-purchases-output.png)
-
----
-
-## How to run
-
-- **MongoDB Compass:** Open the `events` collection → **Aggregations** tab → paste the pipeline stages (without the outer `[]` if your UI expects stage-by-stage).
-- **MongoDB Shell:** `db.events.aggregate([ ... ])` with the full pipeline array.
-- **Python (PyMongo):** `collection.aggregate([ ... ])`.
-
-Ensure the ETL DAG has run at least once so `etl_db.events` is populated.
-
----
-
-## Adding your screenshots
-
-1. Create the `screenshots/` folder if it doesn’t exist.
-2. Save your MongoDB query result screenshots as:
-   - **`screenshots/dau-output.png`** — Daily Active Users result
-   - **`screenshots/daily-purchases-output.png`** — Daily Purchases result
-
-The images will then show up in the sections above.
+![Daily Purchases query output](Image/DAILY_TOTAL_PURCHASE_OUTPUT.png)

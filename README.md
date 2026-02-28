@@ -16,6 +16,10 @@ The DAG **`etl_events_dag`** runs three tasks in sequence:
 
 **Data flow:** Google Drive → `source/logs.json` → transform → `source/transformed.parquet` → MongoDB `etl_db.events`.
 
+After a successful run, the **`etl_db.events`** collection in MongoDB contains the loaded documents (e.g. `user_id`, `event_type`, `event_timestamp`, `device`, `amount`):
+
+![Events collection in MongoDB](Image/events_collection_output.png)
+
 For **analytics queries** (Daily Active Users, Daily Purchases) and their MongoDB aggregation equivalents, see [ANALYTICS_README.md](ANALYTICS_README.md).
 
 The DAG is **manually triggered** (no schedule). Each run overwrites/extends the data in the target collection depending on your use case.
@@ -37,9 +41,13 @@ infilon/
 ├── source/                   # ETL inputs/outputs (mounted in Docker)
 │   ├── logs.json             # Downloaded from Google Drive (extract output)
 │   └── transformed.parquet   # Transformed data (transform output)
-├── analytics_sql_query.sql   # SQL reference for analytics
-├── ANALYTICS_README.md       # MongoDB equivalents + query output screenshots
-└── screenshots/              # Query result screenshots (for ANALYTICS_README)
+├── SQL_QUERIES/
+│   └── analytics_sql_query.sql   # SQL reference for analytics
+├── ANALYTICS_README.md       # MongoDB equivalents, screenshots, output CSVs
+├── output/                   # Analytics query results (CSV)
+│   ├── DAU.csv               # Daily Active Users
+│   └── DAILY_TOTAL_PURCHASE.csv
+└── Image/                    # Screenshots (DAG graph, query outputs)
 ```
 
 ---
@@ -110,6 +118,23 @@ Monitor progress in the Graph or Grid view. When all three tasks (extract → tr
 
 ---
 
+## Analytics queries and output
+
+After the ETL loads data into MongoDB (`etl_db.events`), you can run analytics on it:
+
+- **[ANALYTICS_README.md](ANALYTICS_README.md)** — MongoDB aggregation pipelines for:
+  - **Daily Active Users (DAU)** — distinct users per day
+  - **Daily Purchases** — purchase count and revenue per day  
+  Includes SQL reference, MongoDB equivalents, and screenshots of query results.
+
+- **Output (CSV)** — Query results are also available as CSV files in **`output/`**:
+  - `output/DAU.csv` — Daily Active Users
+  - `output/DAILY_TOTAL_PURCHASE.csv` — Daily Purchases  
+
+Open these in Excel, Google Sheets, or any text editor to view the results.
+
+---
+
 ## Pipeline overview
 
-![ETL Events DAG](DAG_graph.png)
+![ETL Events DAG](Image/DAG_graph.png)
